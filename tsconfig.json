@@ -1,10 +1,8 @@
 {
-    "references": [
-        { "path": "packages/compiler"},
-        { "path": "packages/lsp-client"},
-        { "path": "packages/lsp-server"},
-        { "path": "packages/parser"}
-    ]
-    
-  }
-  
+  "references": [
+    { "path": "packages/compiler" },
+    { "path": "packages/lsp-client" },
+    { "path": "packages/lsp-server" },
+    { "path": "packages/parser" }
+  ]
+}
