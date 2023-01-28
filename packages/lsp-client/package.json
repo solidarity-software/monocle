@@ -1,0 +1,9 @@
+{
+    "name": "@monocle-lang/lsp-client",
+    "version": "1.0.0",
+    "description": "LSP Client for Monocle",
+    "main": "lib/index.js",
+    "repository": "https://github.com/mikeosunajr/monocle",
+    "author": "Michael Osuna Jr",
+    "license": "MIT"
+  }

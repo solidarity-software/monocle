@@ -1,0 +1,9 @@
+{
+    "name": "@monocle-lang/compiler",
+    "version": "1.0.0",
+    "description": "Compiler for Monocle",
+    "main": "lib/index.js",
+    "repository": "https://github.com/mikeosunajr/monocle",
+    "author": "Michael Osuna Jr",
+    "license": "MIT"
+}

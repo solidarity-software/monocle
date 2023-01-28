@@ -1,0 +1,10 @@
+{
+    "name": "@monocle-lang/parser",
+    "version": "1.0.0",
+    "description": "Parser for Monocle",
+    "main": "lib/index.js",
+    "repository": "https://github.com/mikeosunajr/monocle",
+    "author": "Michael Osuna Jr",
+    "license": "MIT"
+  }
+  
