@@ -1,232 +1,275 @@
-export type Location = {
-  pos: number;
-  col: number;
-  line: number;
-};
-
-export type LexerContext = {
-  cur: Location;
-  start: Location;
-  text: string;
-};
-
-export enum TokenType {
-  ModuleKeyword = "ModuleKeyword",
-  TypeIdentifer = "TypeIdentifer",
-  Identifier = "Identifier",
-  Error = "Error",
+export function assertNonNullish<TValue>(
+  value: TValue,
+  message: string
+): asserts value is NonNullable<TValue> {
+  if (value === null || value === undefined) {
+    throw Error(message);
+  }
 }
 
-export type IdentifierToken = {
-  type: TokenType.Identifier;
-  name: string;
-};
+export class Location {
+  public pos = 0;
+  public col = 0;
+  public line = 0;
 
-export type TypeIdentiferToken = {
-  type: TokenType.TypeIdentifer;
-  name: string;
-};
+  static copy(other: Location) {
+    const loc = new Location();
+    loc.col = other.col;
+    loc.line = other.line;
+    loc.pos = other.pos;
 
-export type ModuleToken = TokenBase & {
-  type: TokenType.ModuleKeyword;
-};
+    return loc;
+  }
+}
+
+export enum TokenType {
+  Identifier = "Identifier",
+  LetKeyword = "Let",
+  Error = "Error",
+  Assignment = "Assignment",
+  Number = "Number",
+}
 
 export type ErrorToken = TokenBase & {
   type: TokenType.Error;
   reason: string;
 };
 
-export type Token =
-  | IdentifierToken
-  | ModuleToken
-  | ErrorToken
-  | TypeIdentiferToken;
+export type Token = ErrorToken;
 
 export type TokenBase = {
   start: Location;
   end: Location;
 };
 
-export function* lex(text: string): Generator<Token, void, unknown> {
-  const _ctx: LexerContext = {
-    start: {
-      pos: 0,
-      line: 0,
-      col: 0,
-    },
-    cur: {
-      pos: 0,
-      line: 0,
-      col: 0,
-    },
-    text,
-  };
-
-  for (const token of file()) {
-    yield token;
+export function codePointLen(c: number) {
+  if (c >= 0x10000 && c < 0x10ffff) {
+    return 2;
   }
+  return 1;
+}
 
-  function error(reason: string) {
-    return {
-      ...makeToken(TokenType.Error),
-      reason,
-    };
-  }
+export function* eachCodePoint(str: string) {
+  for (let i = 0; i < str.length; i++) {
+    const c = str.codePointAt(i);
+    assertNonNullish(c, "invalid code point");
 
-  function* file() {
-    skipWhitespace();
-    yield moduleKeyword() || error("Expected module keyword");
-    skipWhitespace();
-    yield typeName() || error("Expected name of module.");
-  }
-
-  // #region utils for making tokens
-
-  function codePointLen(c: number) {
-    if (c >= 0xd800 && c < 0xdc00) {
-      return 2;
+    if (codePointLen(c) === 2) {
+      i++;
     }
-    return 1;
+    yield c;
+  }
+}
+
+export class BaseLexer {
+  public start = new Location();
+  public cur = new Location();
+  public text = "";
+
+  constructor(text: string) {
+    this.text = text;
   }
 
-  function peek() {
-    return _ctx.text.codePointAt(_ctx.cur.pos);
+  peek() {
+    return this.text.codePointAt(this.cur.pos);
   }
 
-  function next() {
-    const c = _ctx.text.codePointAt(_ctx.cur.pos);
+  next() {
+    const c = this.text.codePointAt(this.cur.pos);
 
-    if (c === undefined) {
-      return;
-    }
-    _ctx.cur.pos += codePointLen(c);
+    assertNonNullish(c, "invalid code point");
+    this.cur.pos += codePointLen(c);
 
-    if ("\n".codePointAt(0) === _ctx.cur.pos) {
-      _ctx.cur.line += 1;
-      _ctx.cur.col = 0;
+    if ("\n".codePointAt(0) === this.cur.pos) {
+      this.cur.line += 1;
+      this.cur.col = 0;
     }
 
     return c;
   }
 
-  function len() {
-    return _ctx.text.length - _ctx.cur.pos;
+  len() {
+    return this.text.length - this.cur.pos;
   }
 
-  function copyCur(): Location {
-    return { ..._ctx.cur };
-  }
-
-  function* eachCodePoint(str: string) {
-    for (let i = 0; i < str.length; i++) {
-      const c = str.codePointAt(i);
-      if (c === undefined) {
-        return;
-      }
-
-      if (codePointLen(c) === 2) {
-        i++;
-      }
-      yield c;
-    }
-  }
-
-  function acceptAny(chars: string) {
-    const c = peek();
-
-    if (c === undefined) {
-      return false;
-    }
-    if (chars.includes(String.fromCodePoint(c))) {
-      next();
-      return true;
-    }
-
-    return false;
-  }
-
-  function accept(str: string) {
-    if (len() < str.length) {
-      return false;
-    }
-
-    const oldCur = copyCur();
-
-    for (const c of eachCodePoint(str)) {
-      if (next() !== c) {
-        _ctx.cur = oldCur;
-        return false;
-      }
-    }
-    return true;
-  }
-
-  function skipWhitespace() {
-    while (acceptAny(" \t")) {
-      /* empty */
-    }
-
-    _ctx.start = { ..._ctx.cur };
-  }
-
-  function makeToken(type: TokenType): Token {
-    const token = {
-      type: type,
-      start: { ..._ctx.start },
-      end: { ..._ctx.cur },
-    };
-
-    _ctx.start = { ..._ctx.cur };
-
-    return token as Token;
-  }
-
-  // #endregion
-
-  function moduleKeyword() {
-    if (!accept("module")) {
-      return null;
-    }
-
-    return makeToken(TokenType.ModuleKeyword);
-  }
-
-  function isAlphabetic() {
-    const c = peek();
-    if (c == undefined) {
-      return false;
-    }
-    return String.fromCodePoint(c).match(/\p{L}/gu);
-  }
-
-  function isAlphaNumeric() {
-    return isAlphabetic() || isNumeric();
-  }
-
-  function isNumeric() {
-    const c = peek();
+  isNumeric() {
+    const c = this.peek();
     if (c == undefined) {
       return false;
     }
     return String.fromCodePoint(c).match(/\p{N}/gu);
   }
 
-  function isUppercase() {
-    const c = peek();
+  acceptAny(chars: string) {
+    const c = this.peek();
+
+    if (c === undefined) {
+      return false;
+    }
+
+    if (chars.includes(String.fromCodePoint(c))) {
+      this.next();
+      return true;
+    }
+
+    return false;
+  }
+
+  accept(str: string) {
+    if (this.len() < str.length) {
+      return false;
+    }
+
+    const oldCur = Location.copy(this.cur);
+
+    for (const c of eachCodePoint(str)) {
+      if (this.next() !== c) {
+        this.cur = oldCur;
+        return false;
+      }
+    }
+    return true;
+  }
+
+  skipNonWhitespace() {
+    for (;;) {
+      const c = this.peek();
+
+      if (c == null) {
+        return;
+      }
+
+      if (String.fromCodePoint(c).match(/\p{Space_Separator}/gu)) {
+        break;
+      }
+      this.next();
+    }
+
+    this.start = Location.copy(this.cur);
+  }
+
+  skipWhitespace() {
+    while (this.acceptAny(" \t")) {
+      /* empty */
+    }
+
+    this.start = Location.copy(this.cur);
+  }
+
+  skipBlankLines() {
+    for (;;) {
+      this.skipWhitespace();
+
+      const c = this.peek();
+
+      if (c == null) {
+        return;
+      }
+      if (!String.fromCodePoint(c).match(/\n/gu)) {
+        this.start = Location.copy(this.cur);
+
+        return;
+      }
+      this.next();
+    }
+  }
+
+  isAlphabetic() {
+    const c = this.peek();
     if (c == undefined) {
       return false;
     }
-    return String.fromCodePoint(c).match(/\p{Lu}/gu);
+    return String.fromCodePoint(c).match(/\p{L}/gu);
   }
 
-  function typeName() {
-    if (!isUppercase()) {
+  isAlphaNumeric() {
+    return this.isAlphabetic() || this.isNumeric();
+  }
+
+  makeToken(type: TokenType): Token {
+    const token = {
+      type: type,
+      start: Location.copy(this.start),
+      end: Location.copy(this.cur),
+    };
+
+    this.start = Location.copy(this.cur);
+
+    return token as Token;
+  }
+}
+
+export class Lexer extends BaseLexer {
+  constructor(text: string) {
+    super(text);
+  }
+
+  letKeyword() {
+    if (!this.accept("let")) {
       return null;
     }
-    next();
-    while (isAlphaNumeric()) {
-      next();
-    }
-    return makeToken(TokenType.TypeIdentifer);
+
+    return this.makeToken(TokenType.LetKeyword);
   }
+
+  assignment() {
+    if (!this.accept("=")) {
+      return null;
+    }
+
+    return this.makeToken(TokenType.Assignment);
+  }
+
+  identifier() {
+    if (!this.isAlphabetic()) {
+      return null;
+    }
+    this.next();
+
+    while (this.isAlphaNumeric()) {
+      this.next();
+    }
+    return this.makeToken(TokenType.Identifier);
+  }
+
+  number() {
+    if (!this.isNumeric()) {
+      return null;
+    }
+    this.next();
+    while (this.isNumeric()) {
+      this.next();
+    }
+    return this.makeToken(TokenType.Number);
+  }
+
+  error(reason: string) {
+    const token = {
+      ...this.makeToken(TokenType.Error),
+      reason,
+    };
+
+    this.skipNonWhitespace();
+
+    return token;
+  }
+
+  *lex() {
+    while (this.peek() != null) {
+      this.skipBlankLines();
+      if (this.peek() == null) {
+        return;
+      }
+      yield this.letKeyword() ||
+        this.assignment() ||
+        this.identifier() ||
+        this.number() ||
+        this.error("invalid token");
+    }
+  }
+}
+
+export function* lex(text: string) {
+  const lexer = new Lexer(text);
+  yield* lexer.lex();
 }

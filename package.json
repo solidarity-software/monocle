@@ -26,6 +26,7 @@
     "ts-jest": "^29.0.5"
   },
   "scripts": {
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "test": "node --inspect-brk node_modules/.bin/jest --runInBand"
   }
 }

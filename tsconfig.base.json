@@ -5,6 +5,7 @@
     "declaration": true,
     "declarationMap": true,
     "incremental": true,
-    "target": "ES6"
+    "target": "ES6",
+    "esModuleInterop": true
   }
 }
