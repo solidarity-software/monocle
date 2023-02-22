@@ -1,4 +1,5 @@
-import { assertNonNullish, eachCodePoint, lex, TokenType } from "../src";
+import { lex, TokenType } from "../src/lexer";
+import { eachCodePoint } from "../src/lexer/utils";
 import { expectDone, expectNext, expectType } from "./utils";
 
 test("complex example", () => {
@@ -38,7 +39,4 @@ test("utils", () => {
   for (const c of eachCodePoint("l𝒳t")) {
     c;
   }
-
-  expect(() => assertNonNullish(null, "")).toThrow();
-  expect(() => assertNonNullish(undefined, "")).toThrow();
 });

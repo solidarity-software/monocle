@@ -1,11 +1,5 @@
-export function assertNonNullish<TValue>(
-  value: TValue,
-  message: string
-): asserts value is NonNullable<TValue> {
-  if (value === null || value === undefined) {
-    throw Error(message);
-  }
-}
+import { codePointLen, eachCodePoint } from "./utils";
+import { assertNonNullish } from "../utils";
 
 export class Location {
   public pos = 0;
@@ -28,6 +22,7 @@ export enum TokenType {
   Error = "Error",
   Assignment = "Assignment",
   Number = "Number",
+  Operator = "Operator",
 }
 
 export type ErrorToken = TokenBase & {
@@ -35,31 +30,33 @@ export type ErrorToken = TokenBase & {
   reason: string;
 };
 
-export type Token = ErrorToken;
+export type IdentifierToken = TokenBase & {
+  type: TokenType.Identifier;
+};
+
+export type LetToken = TokenBase & {
+  type: TokenType.LetKeyword;
+};
+
+export type AssignmentToken = TokenBase & {
+  type: TokenType.Assignment;
+};
+
+export type NumberToken = TokenBase & {
+  type: TokenType.Number;
+};
+
+export type Token =
+  | ErrorToken
+  | IdentifierToken
+  | LetToken
+  | AssignmentToken
+  | NumberToken;
 
 export type TokenBase = {
   start: Location;
   end: Location;
 };
-
-export function codePointLen(c: number) {
-  if (c >= 0x10000 && c < 0x10ffff) {
-    return 2;
-  }
-  return 1;
-}
-
-export function* eachCodePoint(str: string) {
-  for (let i = 0; i < str.length; i++) {
-    const c = str.codePointAt(i);
-    assertNonNullish(c, "invalid code point");
-
-    if (codePointLen(c) === 2) {
-      i++;
-    }
-    yield c;
-  }
-}
 
 export class BaseLexer {
   public start = new Location();
@@ -100,21 +97,6 @@ export class BaseLexer {
     return String.fromCodePoint(c).match(/\p{N}/gu);
   }
 
-  acceptAny(chars: string) {
-    const c = this.peek();
-
-    if (c === undefined) {
-      return false;
-    }
-
-    if (chars.includes(String.fromCodePoint(c))) {
-      this.next();
-      return true;
-    }
-
-    return false;
-  }
-
   accept(str: string) {
     if (this.len() < str.length) {
       return false;
@@ -149,8 +131,17 @@ export class BaseLexer {
   }
 
   skipWhitespace() {
-    while (this.acceptAny(" \t")) {
-      /* empty */
+    for (;;) {
+      const c = this.peek();
+
+      if (c == null) {
+        return;
+      }
+
+      if (!String.fromCodePoint(c).match(/\p{Space_Separator}/gu)) {
+        break;
+      }
+      this.next();
     }
 
     this.start = Location.copy(this.cur);
@@ -166,12 +157,12 @@ export class BaseLexer {
         return;
       }
       if (!String.fromCodePoint(c).match(/\n/gu)) {
-        this.start = Location.copy(this.cur);
-
-        return;
+        break;
       }
       this.next();
     }
+
+    this.start = Location.copy(this.cur);
   }
 
   isAlphabetic() {
@@ -197,79 +188,4 @@ export class BaseLexer {
 
     return token as Token;
   }
-}
-
-export class Lexer extends BaseLexer {
-  constructor(text: string) {
-    super(text);
-  }
-
-  letKeyword() {
-    if (!this.accept("let")) {
-      return null;
-    }
-
-    return this.makeToken(TokenType.LetKeyword);
-  }
-
-  assignment() {
-    if (!this.accept("=")) {
-      return null;
-    }
-
-    return this.makeToken(TokenType.Assignment);
-  }
-
-  identifier() {
-    if (!this.isAlphabetic()) {
-      return null;
-    }
-    this.next();
-
-    while (this.isAlphaNumeric()) {
-      this.next();
-    }
-    return this.makeToken(TokenType.Identifier);
-  }
-
-  number() {
-    if (!this.isNumeric()) {
-      return null;
-    }
-    this.next();
-    while (this.isNumeric()) {
-      this.next();
-    }
-    return this.makeToken(TokenType.Number);
-  }
-
-  error(reason: string) {
-    const token = {
-      ...this.makeToken(TokenType.Error),
-      reason,
-    };
-
-    this.skipNonWhitespace();
-
-    return token;
-  }
-
-  *lex() {
-    while (this.peek() != null) {
-      this.skipBlankLines();
-      if (this.peek() == null) {
-        return;
-      }
-      yield this.letKeyword() ||
-        this.assignment() ||
-        this.identifier() ||
-        this.number() ||
-        this.error("invalid token");
-    }
-  }
-}
-
-export function* lex(text: string) {
-  const lexer = new Lexer(text);
-  yield* lexer.lex();
 }

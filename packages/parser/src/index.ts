@@ -1,1 +1,2 @@
-export * from "./lexer";
+export { lex } from "./lexer";
+export { parse } from "./parser";
