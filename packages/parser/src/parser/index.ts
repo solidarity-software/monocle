@@ -1,22 +1,22 @@
-// takes a token generator and returns an AST
+import type { Token } from "../lexer";
 
-import type { Token } from "./lexer";
+type BaseNode = {};
 
 type PeekableGenerator<T1> = Generator<T1> & { peek: () => IteratorResult<T1> };
 
 function peekable<T1>(iterator: Generator<T1>) {
-  let state = iterator.next();
+  let result = iterator.next();
 
   const _i = <PeekableGenerator<T1>>(function* () {
-    while (!state.done) {
-      const current = state.value;
-      state = iterator.next();
+    while (!result.done) {
+      const current = result.value;
+      result = iterator.next();
       yield current;
     }
     return;
   })();
 
-  _i.peek = () => state;
+  _i.peek = () => result;
 
   return _i;
 }
