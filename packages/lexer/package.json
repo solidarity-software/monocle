@@ -1,13 +1,12 @@
 {
-  "name": "@monocle-lang/parser",
+  "name": "@monocle-lang/lexer",
   "version": "1.0.0",
-  "description": "Parser for Monocle",
+  "description": "Lexer for Monocle",
   "main": "lib/index.js",
   "repository": "https://github.com/mikeosunajr/monocle",
   "author": "Michael Osuna Jr",
   "license": "MIT",
   "dependencies": {
-    "@monocle-lang/utils": "^1.0.0",
-    "@monocle-lang/lexer": "^1.0.0"
+    "@monocle-lang/utils": "1.0.0"
   }
 }

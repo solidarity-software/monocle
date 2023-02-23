@@ -1,0 +1,9 @@
+{
+  "name": "@monocle-lang/utils",
+  "version": "1.0.0",
+  "description": "Utils for Monocle",
+  "main": "lib/index.js",
+  "repository": "https://github.com/mikeosunajr/monocle",
+  "author": "Michael Osuna Jr",
+  "license": "MIT"
+}

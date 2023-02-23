@@ -1,5 +1,4 @@
-import { lex, TokenType } from "../src/lexer";
-import { eachCodePoint } from "../src/lexer/utils";
+import { lex, TokenType } from "../src";
 import { expectDone, expectNext, expectType } from "./utils";
 
 test("complex example", () => {
@@ -33,10 +32,4 @@ test("last char invalid", () => {
   expectType(expectNext(lexer), TokenType.Error);
 
   expectDone(lexer);
-});
-
-test("utils", () => {
-  for (const c of eachCodePoint("l𝒳t")) {
-    c;
-  }
 });

@@ -1,4 +1,4 @@
-import { Token, TokenType } from "../src";
+import type { Token, TokenType } from "../src/lexer";
 
 export function expectNext(lexer: Generator<Token, void, unknown>): Token {
   const value = lexer.next().value;

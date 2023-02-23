@@ -1,13 +1,16 @@
-import { codePointLen, eachCodePoint } from "./utils";
-import { assertNonNullish } from "../utils";
+import {
+  assertNonNullish,
+  codePointLen,
+  eachCodePoint,
+} from "@monocle-lang/utils";
 
-export class Location {
+export class Span {
   public pos = 0;
   public col = 0;
   public line = 0;
 
-  static copy(other: Location) {
-    const loc = new Location();
+  static copy(other: Span) {
+    const loc = new Span();
     loc.col = other.col;
     loc.line = other.line;
     loc.pos = other.pos;
@@ -54,13 +57,13 @@ export type Token =
   | NumberToken;
 
 export type TokenBase = {
-  start: Location;
-  end: Location;
+  start: Span;
+  end: Span;
 };
 
 export class BaseLexer {
-  public start = new Location();
-  public cur = new Location();
+  public start = new Span();
+  public cur = new Span();
   public text = "";
 
   constructor(text: string) {
@@ -102,7 +105,7 @@ export class BaseLexer {
       return false;
     }
 
-    const oldCur = Location.copy(this.cur);
+    const oldCur = Span.copy(this.cur);
 
     for (const c of eachCodePoint(str)) {
       if (this.next() !== c) {
@@ -127,7 +130,7 @@ export class BaseLexer {
       this.next();
     }
 
-    this.start = Location.copy(this.cur);
+    this.start = Span.copy(this.cur);
   }
 
   skipWhitespace() {
@@ -144,7 +147,7 @@ export class BaseLexer {
       this.next();
     }
 
-    this.start = Location.copy(this.cur);
+    this.start = Span.copy(this.cur);
   }
 
   skipBlankLines() {
@@ -162,7 +165,7 @@ export class BaseLexer {
       this.next();
     }
 
-    this.start = Location.copy(this.cur);
+    this.start = Span.copy(this.cur);
   }
 
   isAlphabetic() {
@@ -180,11 +183,11 @@ export class BaseLexer {
   makeToken(type: TokenType): Token {
     const token = {
       type: type,
-      start: Location.copy(this.start),
-      end: Location.copy(this.cur),
+      start: Span.copy(this.start),
+      end: Span.copy(this.cur),
     };
 
-    this.start = Location.copy(this.cur);
+    this.start = Span.copy(this.cur);
 
     return token as Token;
   }

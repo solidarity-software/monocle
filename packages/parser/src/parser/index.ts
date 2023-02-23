@@ -1,25 +1,5 @@
-import type { Token } from "../lexer";
-
-type BaseNode = {};
-
-type PeekableGenerator<T1> = Generator<T1> & { peek: () => IteratorResult<T1> };
-
-function peekable<T1>(iterator: Generator<T1>) {
-  let result = iterator.next();
-
-  const _i = <PeekableGenerator<T1>>(function* () {
-    while (!result.done) {
-      const current = result.value;
-      result = iterator.next();
-      yield current;
-    }
-    return;
-  })();
-
-  _i.peek = () => result;
-
-  return _i;
-}
+import type { Token } from "@monocle-lang/lexer";
+import { peekable, PeekableGenerator } from "@monocle-lang/utils";
 
 class Parser {
   lexer: PeekableGenerator<Token>;
@@ -27,9 +7,9 @@ class Parser {
     this.lexer = peekable(lexer);
   }
 
-  parse() {}
-
-  expression() {}
+  parse() {
+    return this.lexer.next();
+  }
 }
 
 export function parse(lexer: Generator<Token>) {
