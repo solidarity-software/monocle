@@ -1,16 +1,12 @@
-import {
-  assertNonNullish,
-  codePointLen,
-  eachCodePoint,
-} from "@monocle-lang/utils";
+import { codePointLen, eachCodePoint } from "@monocle-lang/utils";
 
-export class Span {
+export class TextLocation {
   public pos = 0;
   public col = 0;
   public line = 0;
 
-  static copy(other: Span) {
-    const loc = new Span();
+  static copy(other: TextLocation) {
+    const loc = new TextLocation();
     loc.col = other.col;
     loc.line = other.line;
     loc.pos = other.pos;
@@ -26,10 +22,16 @@ export enum TokenType {
   Assignment = "Assignment",
   Number = "Number",
   Operator = "Operator",
+  EndOfFile = "EndOfFile",
 }
 
 export type ErrorToken = TokenBase & {
   type: TokenType.Error;
+  reason: string;
+};
+
+export type EndOfFileToken = TokenBase & {
+  type: TokenType.EndOfFile;
   reason: string;
 };
 
@@ -54,16 +56,17 @@ export type Token =
   | IdentifierToken
   | LetToken
   | AssignmentToken
+  | EndOfFileToken
   | NumberToken;
 
 export type TokenBase = {
-  start: Span;
-  end: Span;
+  start: TextLocation;
+  end: TextLocation;
 };
 
 export class BaseLexer {
-  public start = new Span();
-  public cur = new Span();
+  public start = new TextLocation();
+  public cur = new TextLocation();
   public text = "";
 
   constructor(text: string) {
@@ -77,10 +80,13 @@ export class BaseLexer {
   next() {
     const c = this.text.codePointAt(this.cur.pos);
 
-    assertNonNullish(c, "invalid code point");
+    if (c == null) {
+      return c;
+    }
+
     this.cur.pos += codePointLen(c);
 
-    if ("\n".codePointAt(0) === this.cur.pos) {
+    if ("\n".codePointAt(0) === c) {
       this.cur.line += 1;
       this.cur.col = 0;
     }
@@ -90,6 +96,14 @@ export class BaseLexer {
 
   len() {
     return this.text.length - this.cur.pos;
+  }
+
+  isPunctuation() {
+    const c = this.peek();
+    if (c == undefined) {
+      return false;
+    }
+    return String.fromCodePoint(c).match(/\p{Punctuation}|\p{Symbol}/gu);
   }
 
   isNumeric() {
@@ -105,7 +119,7 @@ export class BaseLexer {
       return false;
     }
 
-    const oldCur = Span.copy(this.cur);
+    const oldCur = TextLocation.copy(this.cur);
 
     for (const c of eachCodePoint(str)) {
       if (this.next() !== c) {
@@ -130,7 +144,7 @@ export class BaseLexer {
       this.next();
     }
 
-    this.start = Span.copy(this.cur);
+    this.start = TextLocation.copy(this.cur);
   }
 
   skipWhitespace() {
@@ -147,7 +161,7 @@ export class BaseLexer {
       this.next();
     }
 
-    this.start = Span.copy(this.cur);
+    this.start = TextLocation.copy(this.cur);
   }
 
   skipBlankLines() {
@@ -165,7 +179,7 @@ export class BaseLexer {
       this.next();
     }
 
-    this.start = Span.copy(this.cur);
+    this.start = TextLocation.copy(this.cur);
   }
 
   isAlphabetic() {
@@ -183,11 +197,11 @@ export class BaseLexer {
   makeToken(type: TokenType): Token {
     const token = {
       type: type,
-      start: Span.copy(this.start),
-      end: Span.copy(this.cur),
+      start: TextLocation.copy(this.start),
+      end: TextLocation.copy(this.cur),
     };
 
-    this.start = Span.copy(this.cur);
+    this.start = TextLocation.copy(this.cur);
 
     return token as Token;
   }

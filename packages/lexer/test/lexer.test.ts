@@ -12,8 +12,8 @@ test("complex example", () => {
   expectType(expectNext(lexer), TokenType.Assignment);
   expectType(expectNext(lexer), TokenType.Number);
   expectType(expectNext(lexer), TokenType.Identifier);
-  expectType(expectNext(lexer), TokenType.Error);
-  expectType(expectNext(lexer), TokenType.Error);
+  expectType(expectNext(lexer), TokenType.Operator);
+  expectType(expectNext(lexer), TokenType.Operator);
 
   expectDone(lexer);
 });
@@ -26,8 +26,24 @@ test("identifier", () => {
   expectDone(lexer);
 });
 
-test("last char invalid", () => {
-  const lexer = lex("^");
+test("operator", () => {
+  const lexer = lex("++++");
+
+  expectType(expectNext(lexer), TokenType.Operator);
+
+  expectDone(lexer);
+});
+
+test("unsupported character", () => {
+  const lexer = lex(`\u20E2`);
+
+  expectType(expectNext(lexer), TokenType.Error);
+
+  expectDone(lexer);
+});
+
+test("unsupported character", () => {
+  const lexer = lex(`\u20E2 `);
 
   expectType(expectNext(lexer), TokenType.Error);
 

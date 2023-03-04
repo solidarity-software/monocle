@@ -1,12 +1,3 @@
-export function assertNonNullish<TValue>(
-  value: TValue,
-  message: string
-): asserts value is NonNullable<TValue> {
-  if (value === null || value === undefined) {
-    throw Error(message);
-  }
-}
-
 export function codePointLen(c: number) {
   if (c >= 0x10000 && c < 0x10ffff) {
     return 2;
@@ -17,12 +8,13 @@ export function codePointLen(c: number) {
 export function* eachCodePoint(str: string) {
   for (let i = 0; i < str.length; i++) {
     const c = str.codePointAt(i);
-    assertNonNullish(c, "invalid code point");
 
-    if (codePointLen(c) === 2) {
+    /* eslint-disable @typescript-eslint/no-non-null-assertion */
+    if (codePointLen(c!) === 2) {
       i++;
     }
-    yield c;
+    yield c!;
+    /* eslint-enable @typescript-eslint/no-non-null-assertion */
   }
 }
 

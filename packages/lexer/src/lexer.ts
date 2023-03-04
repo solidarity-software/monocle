@@ -1,6 +1,6 @@
 import { BaseLexer, TokenType } from "./base";
 
-export { TokenType, Token } from "./base";
+export { TokenType, Token, TextLocation } from "./base";
 
 class Lexer extends BaseLexer {
   constructor(text: string) {
@@ -46,6 +46,17 @@ class Lexer extends BaseLexer {
     return this.makeToken(TokenType.Number);
   }
 
+  operator() {
+    if (!this.isPunctuation()) {
+      return null;
+    }
+    this.next();
+    while (this.isPunctuation()) {
+      this.next();
+    }
+    return this.makeToken(TokenType.Operator);
+  }
+
   error(reason: string) {
     const token = {
       ...this.makeToken(TokenType.Error),
@@ -67,6 +78,7 @@ class Lexer extends BaseLexer {
         this.assignment() ||
         this.identifier() ||
         this.number() ||
+        this.operator() ||
         this.error("invalid token");
     }
   }

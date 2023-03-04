@@ -1,12 +1,12 @@
-import { assertNonNullish, eachCodePoint, peekable } from "../src";
+import { eachCodePoint, peekable } from "../src";
 
 test("utils", () => {
+  const codes: Array<number> = [];
   for (const c of eachCodePoint("l𝒳t")) {
-    c;
+    codes.push(c);
   }
 
-  expect(() => assertNonNullish(null, "")).toThrow();
-  expect(() => assertNonNullish(undefined, "")).toThrow();
+  expect(codes).toEqual([0x6c, 0x1d4b3, 0x74]);
 });
 
 test("peekable", () => {

@@ -1,1 +1,1 @@
-export { lex, Token, TokenType } from "./lexer";
+export { lex, Token, TokenType, TextLocation } from "./lexer";
