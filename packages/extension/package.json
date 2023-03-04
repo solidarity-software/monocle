@@ -1,0 +1,32 @@
+{
+  "name": "@monocle-lang/extension",
+  "displayName": "monocle-lang-ext",
+  "description": "Official monocle lang extension",
+  "version": "0.0.1",
+  "publisher": "Solidarity Software, Inc",
+  "repository": "https://github.com/solidarity-software/monocle.git",
+  "engines": {
+    "vscode": "^1.75.1"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./lib/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "helloworld.helloWorld",
+        "title": "Hello World"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.76.0"
+  }
+}

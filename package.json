@@ -1,7 +1,7 @@
 {
   "name": "@monocle-lang/monocle",
   "description": "A backend language using Software Transactional Memory",
-  "repository": "https://github.com/mikeosunajr/monocle.git",
+  "repository": "https://github.com/solidarity-software/monocle.git",
   "author": "Michael Osuna Jr",
   "workspaces": [
     "packages/*"
@@ -27,7 +27,9 @@
   },
   "scripts": {
     "prepare": "husky install",
-    "test": "node --inspect-brk node_modules/.bin/jest --runInBand",
+    "watch": "tsc -b -w",
+    "test": "jest",
+    "test:debug": "node node_modules/.bin/jest --runInBand",
     "update-refs": "workspaces-to-typescript-project-references"
   }
 }

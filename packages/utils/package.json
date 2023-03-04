@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Utils for Monocle",
   "main": "lib/index.js",
-  "repository": "https://github.com/mikeosunajr/monocle",
+  "repository": "https://github.com/solidarity-software/monocle.git",
   "author": "Michael Osuna Jr",
   "license": "MIT"
 }
