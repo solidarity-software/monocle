@@ -2,6 +2,7 @@
   "files": [],
   "references": [
     { "path": "packages/compiler" },
+    { "path": "packages/extension" },
     { "path": "packages/lsp-client" },
     { "path": "packages/lsp-server" },
     { "path": "packages/parser" },
