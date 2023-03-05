@@ -29,7 +29,6 @@
     "prepare": "husky install",
     "watch": "tsc -b -w",
     "test": "jest",
-    "test:debug": "node node_modules/.bin/jest --runInBand",
     "update-refs": "workspaces-to-typescript-project-references"
   }
 }
