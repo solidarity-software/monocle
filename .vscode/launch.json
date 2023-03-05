@@ -19,6 +19,19 @@
       "runtimeExecutable": "npm",
       "skipFiles": ["<node_internals>/**"],
       "type": "node"
+    },
+    {
+      "name": "Run Extension Tests",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--disable-extensions",
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/extension",
+        "--extensionTestsPath=${workspaceFolder}/packages/extension/lib/test/suite/index"
+      ],
+      "outFiles": ["${workspaceFolder}/packages/extension/lib/test/**/*.js"],
+      "preLaunchTask": "npm: watch"
     }
   ]
 }
