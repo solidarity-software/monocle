@@ -11,4 +11,5 @@ module.exports = {
     ],
   },
   collectCoverageFrom: ["**/src/*.ts"],
+  testPathIgnorePatterns: ["packages/extension/"],
 };
