@@ -1,43 +1,14 @@
-import { TextLocation, Token, TokenType } from "@monocle-lang/lexer";
+import { Token, TokenType } from "@monocle-lang/lexer";
 import { peekable, PeekableGenerator } from "@monocle-lang/utils";
-
-enum AType {
-  Number = "Number",
-  BinaryOperation = "BinaryOperation",
-  Operator = "Operator",
-  Error = "Error",
-}
-
-type BaseNode = {
-  type: AType;
-  start: TextLocation;
-  end: TextLocation;
-};
-
-type ANumber = BaseNode & {
-  type: AType.Number;
-  value: Token;
-};
-
-type ABinOperation = BaseNode & {
-  type: AType.BinaryOperation;
-  left: AstNode;
-  right: AstNode;
-  operator: AOperator;
-};
-
-type AOperator = BaseNode & {
-  type: AType.Operator;
-  value: Token;
-};
-
-type AError = BaseNode & {
-  type: AType.Error;
-  value: Token;
-  reason: string;
-};
-
-type AstNode = ANumber | AOperator | ABinOperation | AError;
+import {
+  AstNode,
+  AType,
+  BaseNode,
+  ANumber,
+  AOperator,
+  AError,
+  ABinOperation,
+} from "./types";
 
 class Parser {
   lexer: PeekableGenerator<Token>;

@@ -5,5 +5,9 @@
   "main": "lib/index.js",
   "repository": "https://github.com/solidarity-software/monocle.git",
   "author": "Michael Osuna Jr",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "binaryen": "^112.0.0",
+    "@monocle-lang/parser": "^1.0.0"
+  }
 }
