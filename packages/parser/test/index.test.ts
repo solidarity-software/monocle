@@ -1,7 +1,7 @@
 import { lex } from "@monocle-lang/lexer";
 import { parse } from "../src";
 
-test("sadf", () => {
+test("simple expression", () => {
   expect(true).toEqual(true);
   const ast = parse(lex("1 + 2"));
 
